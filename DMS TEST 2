@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DealerDesk — Dealership Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --bg:#E9E7DF;
+  --surface:#FFFFFF;
+  --surface-alt:#F3F1EA;
+  --ink:#15181D;
+  --ink-soft:#5B6068;
+  --ink-faint:#8A8F97;
+  --line:#D9D5C9;
+  --line-strong:#B9B4A5;
+  --primary:#24435E;
+  --primary-dark:#15293B;
+  --primary-soft:#DEE6EC;
+  --accent:#D98E20;
+  --accent-dark:#A66912;
+  --force:#C1440E;
+  --force-bg:#F7E2D6;
+  --mahindra:#1F6F5C;
+  --mahindra-bg:#DCEEE8;
+  --danger:#B23A2E;
+  --danger-bg:#F6E1DD;
+  --success:#3F7D4D;
+  --success-bg:#E2EEE3;
+  --warn:#A66912;
+  --warn-bg:#F8E7C8;
+  --radius:7px;
+  --font-display:'Archivo',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+  --shadow-sm:0 1px 2px rgba(21,23,29,0.08);
+  --shadow-md:0 6px 20px rgba(21,23,29,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--ink);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;}
+a{color:inherit;}
+::selection{background:var(--accent);color:#fff;}
+
+/* ===== LAYOUT SHELL ===== */
+#app{display:flex;min-height:100vh;}
+
+#sidebar{
+  width:230px;
+  flex-shrink:0;
+  background:var(--primary-dark);
+  color:#E9EEF2;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:20px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.brand-plate{
+  width:38px;height:38px;
+  border:2px solid var(--accent);
+  border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);
+  font-weight:900;
+  font-size:14px;
+  color:var(--accent);
+  letter-spacing:0.5px;
+  flex-shrink:0;
+}
+.brand-text .name{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:16.5px;
+  letter-spacing:0.3px;
+  color:#fff;
+  line-height:1.15;
+}
+.brand-text .tagline{
+  font-size:10.5px;
+  color:#9FB0BD;
+  letter-spacing:0.6px;
+  text-transform:uppercase;
+  margin-top:2px;
+}
+nav.navlist{
+  flex:1;
+  padding:14px 10px;
+  overflow-y:auto;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:10px 12px;
+  border-radius:6px;
+  color:#C7D2DA;
+  cursor:pointer;
+  font-size:13.5px;
+  font-weight:500;
+  margin-bottom:2px;
+  border-left:3px solid transparent;
+  transition:background .12s ease,color .12s ease;
+  user-select:none;
+}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.nav-item.active{
+  background:rgba(217,142,32,0.14);
+  color:#fff;
+  border-left:3px solid var(--accent);
+}
+.nav-icon{width:17px;height:17px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;}
+.nav-icon svg{width:17px;height:17px;}
+.nav-foot{
+  padding:14px 16px 18px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  font-size:11px;
+  color:#7E91A0;
+  line-height:1.5;
+}
+
+#main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+#topbar{
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  padding:14px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+#topbar h1{
+  font-family:var(--font-display);
+  font-size:19px;
+  font-weight:800;
+  margin:0;
+  letter-spacing:0.2px;
+}
+#topbar .subtitle{
+  font-size:12px;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.save-indicator{
+  font-size:11.5px;
+  color:var(--ink-faint);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:84px;
+}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;}
+.save-dot.saving{background:var(--accent);animation:pulse 1s infinite ease-in-out;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+.role-switch{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--surface-alt);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:4px 6px 4px 12px;
+}
+.role-switch label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.4px;}
+.role-switch select{
+  border:none;background:var(--surface);
+  font-family:inherit;font-weight:600;font-size:12.5px;
+  padding:5px 10px;border-radius:14px;cursor:pointer;
+  border:1px solid var(--line);
+}
+
+#main-content{padding:26px 28px 60px;flex:1;}
+
+/* ===== TYPE ===== */
+h2.section-title{
+  font-family:var(--font-display);
+  font-size:15px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
+  color:var(--primary);
+  margin:0 0 14px;
+}
+.muted{color:var(--ink-soft);}
+.faint{color:var(--ink-faint);}
+
+/* ===== BUTTONS ===== */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:inherit;font-weight:600;font-size:13px;
+  padding:9px 16px;border-radius:6px;border:1px solid transparent;
+  cursor:pointer;transition:filter .12s ease, transform .05s ease;
+  white-space:nowrap;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{filter:brightness(0.93);}
+.btn-dark{background:var(--primary);color:#fff;}
+.btn-dark:hover{filter:brightness(1.12);}
+.btn-outline{background:var(--surface);color:var(--ink);border-color:var(--line-strong);}
+.btn-outline:hover{background:var(--surface-alt);}
+.btn-danger-outline{background:var(--surface);color:var(--danger);border-color:var(--danger);}
+.btn-danger-outline:hover{background:var(--danger-bg);}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:5px;}
+.btn-icon{padding:7px 9px;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;}
+.btn-text{background:none;border:none;color:var(--primary);font-weight:600;font-size:12.5px;cursor:pointer;padding:4px 2px;}
+.btn-text:hover{text-decoration:underline;}
+
+/* ===== STAT PLATES (signature element) ===== */
+.plate-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px;margin-bottom:24px;}
+.plate{
+  background:var(--surface);
+  border:1.5px solid var(--ink);
+  border-top:4px solid var(--accent);
+  border-radius:4px;
+  padding:14px 16px 12px;
+  position:relative;
+}
+.plate.alert{border-top-color:var(--danger);}
+.plate .plate-label{
+  font-family:var(--font-mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--ink-soft);
+  display:block;margin-bottom:6px;
+}
+.plate .plate-value{
+  font-family:var(--font-display);
+  font-size:28px;
+  font-weight:800;
+  line-height:1;
+}
+.plate .plate-sub{font-size:11px;color:var(--ink-faint);margin-top:5px;}
+.plate-corner{position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--line-strong);}
+
+/* code/number badge (plate motif reused inline) */
+.code-tag{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  font-weight:600;
+  background:var(--surface-alt);
+  border:1px solid var(--line-strong);
+  border-radius:4px;
+  padding:2px 7px;
+  display:inline-block;
+  letter-spacing:0.3px;
+}
+
+/* ===== CARD / PANEL ===== */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:20px;
+}
+.card-flush{padding:0;overflow:hidden;}
+.toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin-bottom:16px;flex-wrap:wrap;
+}
+.toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.search-input{
+  border:1px solid var(--line-strong);border-radius:6px;
+  padding:8px 12px;font-size:13px;width:230px;font-family:inherit;background:var(--surface);
+}
+.search-input:focus, select:focus, input:focus, textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+/* ===== TABS ===== */
+.tabbar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.tabbtn{
+  padding:8px 16px;border-radius:6px 6px 0 0;
+  border:1px solid var(--line);border-bottom:none;
+  background:var(--surface-alt);color:var(--ink-soft);
+  font-weight:600;font-size:13px;cursor:pointer;
+}
+.tabbtn.active{background:var(--surface);color:var(--ink);border-bottom:2px solid var(--surface);position:relative;top:1px;}
+.subtab-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.subtab{
+  padding:6px 14px;border-radius:16px;border:1px solid var(--line-strong);
+  background:var(--surface);font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-soft);
+}
+.subtab.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+.brand-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.3px;
+}
+.brand-chip.force{background:var(--force-bg);color:var(--force);}
+.brand-chip.mahindra{background:var(--mahindra-bg);color:var(--mahindra);}
+
+/* ===== TABLE ===== */
+.table-wrap{overflow-x:auto;}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.data-table th{
+  text-align:left;font-family:var(--font-mono);font-size:10.5px;
+  text-transform:uppercase;letter-spacing:0.6px;color:var(--ink-soft);
+  padding:10px 12px;border-bottom:2px solid var(--ink);white-space:nowrap;
+}
+table.data-table td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
+table.data-table tbody tr:hover{background:var(--surface-alt);}
+table.data-table tbody tr.row-clickable{cursor:pointer;}
+.row-actions{display:flex;gap:6px;justify-content:flex-end;}
+.empty-row td{padding:36px 12px;}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:11px;font-size:11px;font-weight:700;letter-spacing:0.2px;}
+.badge.status-pending{background:var(--warn-bg);color:var(--warn);}
+.badge.status-transit{background:var(--primary-soft);color:var(--primary);}
+.badge.status-cleared{background:var(--success-bg);color:var(--success);}
+.badge.status-delivered{background:#E4E2F4;color:#4B3F9E;}
+.badge.status-released{background:var(--surface-alt);color:var(--ink-soft);}
+.badge.low-stock{background:var(--danger-bg);color:var(--danger);}
+.badge.ok-stock{background:var(--success-bg);color:var(--success);}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{
+  text-align:center;padding:50px 20px;color:var(--ink-soft);
+}
+.empty-state .empty-icon{font-size:30px;margin-bottom:10px;opacity:0.5;}
+.empty-state h3{font-family:var(--font-display);font-size:15px;margin:0 0 6px;color:var(--ink);}
+.empty-state p{font-size:13px;margin:0 0 16px;}
+
+/* ===== MODAL ===== */
+#modal-root{position:fixed;inset:0;z-index:100;display:none;}
+#modal-root.open{display:block;}
+.modal-backdrop{position:absolute;inset:0;background:rgba(21,23,29,0.55);}
+.modal-box{
+  position:relative;background:var(--surface);border-radius:10px;
+  max-width:640px;width:92%;margin:5vh auto;max-height:90vh;
+  display:flex;flex-direction:column;box-shadow:var(--shadow-md);
+}
+.modal-box.wide{max-width:880px;}
+.modal-head{
+  padding:18px 22px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head h3{font-family:var(--font-display);font-size:16px;margin:0;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);line-height:1;padding:4px;}
+.modal-close:hover{color:var(--ink);}
+.modal-body{padding:20px 22px;overflow-y:auto;}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;}
+
+/* ===== FORM ===== */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.single{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.span2{grid-column:1/-1;}
+.field label{font-size:12px;font-weight:600;color:var(--ink-soft);}
+.field label .req{color:var(--danger);}
+.field input,.field select,.field textarea{
+  border:1px solid var(--line-strong);border-radius:6px;
+  padding:9px 11px;font-size:13.5px;font-family:inherit;background:var(--surface);width:100%;
+}
+.field textarea{resize:vertical;min-height:70px;}
+.field-hint{font-size:11px;color:var(--ink-faint);}
+
+/* ===== TOAST ===== */
+#toast-root{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--ink);color:#fff;padding:11px 16px;border-radius:7px;
+  font-size:13px;box-shadow:var(--shadow-md);min-width:220px;
+  display:flex;align-items:center;gap:9px;
+  animation:slideIn .18s ease;
+}
+.toast.error{background:var(--danger);}
+.toast.success{background:var(--success);}
+@keyframes slideIn{from{transform:translateY(8px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* ===== DOC TYPE GRID ===== */
+.doctype-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:24px;}
+.doctype-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:16px 14px;cursor:pointer;transition:border-color .12s ease, transform .08s ease;
+}
+.doctype-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.doctype-card .dt-prefix{font-family:var(--font-mono);font-size:10.5px;color:var(--accent-dark);font-weight:700;letter-spacing:1px;}
+.doctype-card .dt-name{font-family:var(--font-display);font-weight:700;font-size:14px;margin-top:5px;}
+.doctype-card .dt-count{font-size:11px;color:var(--ink-faint);margin-top:6px;}
+
+/* line items table inside builder */
+.lineitem-row{display:grid;grid-template-columns:2.2fr 0.8fr 1fr 1fr 28px;gap:8px;align-items:center;margin-bottom:8px;}
+.lineitem-row input,.lineitem-row select{padding:7px 9px;font-size:12.5px;}
+.lineitem-head{display:grid;grid-template-columns:2.2fr 0.8fr 1fr 1fr 28px;gap:8px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-soft);margin-bottom:6px;font-family:var(--font-mono);}
+.remove-line{background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;}
+.totals-box{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
+.totals-box .trow{display:flex;gap:30px;font-size:13px;width:240px;justify-content:space-between;}
+.totals-box .trow.grand{font-weight:800;font-size:15px;border-top:1px solid var(--line);padding-top:7px;}
+
+/* ===== DOC PREVIEW / PRINT ===== */
+.doc-preview{background:#fff;border:1px solid var(--line);border-radius:8px;padding:36px;font-size:13px;color:#15181D;}
+.doc-preview .dp-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--ink);padding-bottom:16px;margin-bottom:20px;}
+.doc-preview .dp-company{font-family:var(--font-display);font-weight:800;font-size:20px;}
+.doc-preview .dp-meta{font-family:var(--font-mono);text-align:right;font-size:12px;}
+.doc-preview .dp-meta .dp-type{font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-dark);}
+.doc-preview .dp-parties{display:flex;justify-content:space-between;gap:30px;margin-bottom:22px;}
+.doc-preview .dp-label{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--ink-soft);margin-bottom:4px;}
+.doc-preview table{width:100%;border-collapse:collapse;margin-bottom:18px;}
+.doc-preview th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.4px;border-bottom:2px solid var(--ink);padding:8px 6px;}
+.doc-preview td{padding:8px 6px;border-bottom:1px solid var(--line);}
+.doc-preview .dp-totals{margin-left:auto;width:260px;}
+.doc-preview .dp-terms{margin-top:24px;font-size:12px;color:var(--ink-soft);white-space:pre-wrap;line-height:1.6;}
+.doc-preview .dp-sign{display:flex;justify-content:space-between;margin-top:50px;gap:30px;}
+.doc-preview .dp-sign-block{flex:1;border-top:1px solid var(--ink);padding-top:6px;font-size:11px;color:var(--ink-soft);}
+
+@media print{
+  body *{visibility:hidden;}
+  #print-area, #print-area *{visibility:visible;}
+  #print-area{position:absolute;top:0;left:0;width:100%;padding:20px;}
+  .no-print{display:none !important;}
+}
+
+@media (max-width:880px){
+  #sidebar{position:fixed;left:0;right:0;top:0;width:100%;height:auto;flex-direction:row;z-index:50;}
+  .brand{border-bottom:none;padding:10px 14px;}
+  .brand-text .tagline{display:none;}
+  nav.navlist{display:flex;flex-direction:row;overflow-x:auto;padding:6px;flex:none;}
+  .nav-item{flex-shrink:0;border-left:none;border-bottom:3px solid transparent;}
+  .nav-item.active{border-left:none;border-bottom:3px solid var(--accent);}
+  .nav-foot{display:none;}
+  #main-col{padding-top:104px;}
+  .form-grid{grid-template-columns:1fr;}
+  .lineitem-row{grid-template-columns:1fr;gap:4px;background:var(--surface-alt);padding:8px;border-radius:6px;margin-bottom:10px;}
+  .lineitem-head{display:none;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"><div class="modal-backdrop" onclick="closeModal()"></div><div id="modal-container"></div></div>
+<div id="toast-root"></div>
+<div id="print-area"></div>
+<script>
+/* =========================================================
+   DEALERDESK — APPLICATION SCRIPT
+   Sections: STATE & STORAGE | UTILITIES | ICONS | SHELL/ROUTER
+   DASHBOARD | CARGO | INVENTORY | CUSTOMERS | DOCUMENTS | SETTINGS
+   MODAL | TOAST | PDF/PRINT | INIT
+   ========================================================= */
+
+/* ===================== STATE & STORAGE ===================== */
+const DOC_PREFIX = {
+  'Quotation':'QUO',
+  'Proforma Invoice':'PFI',
+  'VAT Invoice':'VAT',
+  'Purchase Order':'PO',
+  'Delivery Note':'DN',
+  'Deed of Sale':'DOS',
+  'Agreement':'AGR'
+};
+const DOC_TYPES = Object.keys(DOC_PREFIX);
+
+const VEHICLE_DOC_FLOW = ['Quotation','Proforma Invoice','VAT Invoice','Delivery Note','Deed of Sale','Agreement'];
+const PARTS_DOC_FLOW = ['Quotation','VAT Invoice'];
+
+const BRAND_CATEGORIES = {
+  'Force': ['Spare Parts','Vans'],
+  'Mahindra': ['Spare Parts','Tractors','Implements']
+};
+
+const DEFAULT_STATE = {
+  role: 'Administrator',
+  userName: '',
+  cargo: [],
+  inventory: [],
+  customers: [],
+  documents: [],
+  counters: { 'Quotation':0,'Proforma Invoice':0,'VAT Invoice':0,'Purchase Order':0,'Delivery Note':0,'Deed of Sale':0,'Agreement':0 },
+  settings: {
+    company: { name:'', address:'', phone:'', email:'', vatNo:'' },
+    vatRate: 15,
+    lowStockThreshold: 5
+  }
+};
+
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+let storageReady = false;
+
+function deepMerge(base, incoming){
+  if(!incoming || typeof incoming !== 'object') return base;
+  const out = Array.isArray(base) ? incoming : {...base};
+  if(!Array.isArray(base) && typeof base === 'object'){
+    for(const k in base){
+      if(incoming[k] === undefined){ out[k] = base[k]; }
+      else if(typeof base[k] === 'object' && base[k] !== null && !Array.isArray(base[k])){
+        out[k] = deepMerge(base[k], incoming[k]);
+      } else {
+        out[k] = incoming[k];
+      }
+    }
+  }
+  return out;
+}
+
+async function loadData(){
+  try{
+    const res = await window.storage.get('dealership-data', true);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      state = deepMerge(DEFAULT_STATE, parsed);
+    }
+  }catch(e){
+    // no existing record yet — start fresh
+    console.log('No existing DealerDesk data found, starting fresh.');
+  }
+  storageReady = true;
+}
+
+let saveTimer = null;
+async function saveData(){
+  setSaveIndicator('saving');
+  try{
+    await window.storage.set('dealership-data', JSON.stringify(state), true);
+    setSaveIndicator('saved');
+  }catch(e){
+    console.error('Save failed', e);
+    setSaveIndicator('error');
+    showToast('Could not save changes. Check your connection and try again.', 'error');
+  }
+}
+
+function setSaveIndicator(status){
+  const dot = document.getElementById('save-dot');
+  const txt = document.getElementById('save-text');
+  if(!dot || !txt) return;
+  if(status === 'saving'){ dot.className = 'save-dot saving'; txt.textContent = 'Saving…'; }
+  else if(status === 'saved'){ dot.className = 'save-dot'; txt.textContent = 'All changes saved'; }
+  else { dot.className = 'save-dot'; dot.style.background = 'var(--danger)'; txt.textContent = 'Save failed'; }
+}
+
+/* ===================== UTILITIES ===================== */
+function uid(){ return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
+
+function escapeHtml(str){
+  if(str === null || str === undefined) return '';
+  return String(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#39;');
+}
+
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function formatDate(d){
+  if(!d) return '—';
+  const dt = new Date(d + (d.length<=10?'T00:00:00':''));
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function formatMoney(n){
+  n = Number(n) || 0;
+  return 'Rs ' + n.toLocaleString('en-MU', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function byId(id){ return document.getElementById(id); }
+
+function qs(sel, root){ return (root||document).querySelector(sel); }
+function qsa(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+
+function isAdmin(){ return state.role === 'Administrator'; }
+
+function requireAdmin(actionLabel){
+  if(!isAdmin()){
+    showToast('Switch to Administrator role to ' + actionLabel + '.', 'error');
+    return false;
+  }
+  return true;
+}
+
+/* ===================== ICONS (inline svg, stroke-based) ===================== */
+const ICONS = {
+  dashboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>',
+  cargo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>',
+  inventory:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',
+  customers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.9-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M16 14.3c2.7.4 4.7 2.4 5 5.7"/></svg>',
+  documents:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h5M9.5 17h5"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.5-2.4.7a7.6 7.6 0 0 0-2.6-1.5L14 2h-4l-.4 2.2a7.6 7.6 0 0 0-2.6 1.5l-2.4-.7-2 3.5 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.5 2.4-.7a7.6 7.6 0 0 0 2.6 1.5L10 22h4l.4-2.2a7.6 7.6 0 0 0 2.6-1.5l2.4.7 2-3.5z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>',
+  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 17v4h12v-4"/></svg>',
+};
+function icon(name){ return '<span class="nav-icon">'+(ICONS[name]||'')+'</span>'; }
+
+/* ===================== TOAST ===================== */
+function showToast(msg, type){
+  const root = byId('toast-root');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' '+type : '');
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 3200);
+}
+
+/* ===================== MODAL ===================== */
+function openModal(html, opts){
+  opts = opts || {};
+  byId('modal-container').innerHTML =
+    '<div class="modal-box'+(opts.wide?' wide':'')+'">' +
+      '<div class="modal-head"><h3>'+escapeHtml(opts.title||'')+'</h3>' +
+        '<button class="modal-close" onclick="closeModal()">&times;</button></div>' +
+      '<div class="modal-body">'+html+'</div>' +
+      (opts.foot ? '<div class="modal-foot">'+opts.foot+'</div>' : '') +
+    '</div>';
+  byId('modal-root').classList.add('open');
+}
+function closeModal(){
+  byId('modal-root').classList.remove('open');
+  byId('modal-container').innerHTML = '';
+}
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeModal(); });
+/* ===================== SHELL / ROUTER ===================== */
+let currentRoute = 'dashboard';
+const ROUTES = [
+  { key:'dashboard', label:'Dashboard', icon:'dashboard' },
+  { key:'cargo', label:'Cargo Tracking', icon:'cargo' },
+  { key:'inventory', label:'Inventory', icon:'inventory' },
+  { key:'customers', label:'Customers', icon:'customers' },
+  { key:'documents', label:'Documents', icon:'documents' },
+  { key:'settings', label:'Settings', icon:'settings' },
+];
+
+function renderShell(){
+  const app = byId('app');
+  app.innerHTML =
+    '<div id="sidebar">' +
+      '<div class="brand">' +
+        '<div class="brand-plate">DD</div>' +
+        '<div class="brand-text"><div class="name">DealerDesk</div><div class="tagline">Force &amp; Mahindra</div></div>' +
+      '</div>' +
+      '<nav class="navlist" id="navlist"></nav>' +
+      '<div class="nav-foot">Data is shared with everyone using this DealerDesk link.</div>' +
+    '</div>' +
+    '<div id="main-col">' +
+      '<div id="topbar">' +
+        '<div><h1 id="page-title">Dashboard</h1><div class="subtitle" id="page-subtitle">Overview of cargo, stock, customers and documents</div></div>' +
+        '<div class="topbar-right">' +
+          '<div class="save-indicator"><span class="save-dot" id="save-dot"></span><span id="save-text">Loading…</span></div>' +
+          '<div class="role-switch"><label>Role</label><select id="role-select" onchange="handleRoleChange(this.value)">' +
+            '<option value="Administrator">Administrator</option>' +
+            '<option value="Staff">Staff</option>' +
+          '</select></div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="main-content"></div>' +
+    '</div>';
+  renderNav();
+  byId('role-select').value = state.role;
+}
+
+function renderNav(){
+  const nav = byId('navlist');
+  nav.innerHTML = ROUTES.map(r =>
+    '<div class="nav-item'+(currentRoute===r.key?' active':'')+'" onclick="navigate(\''+r.key+'\')">' +
+      icon(r.icon) + '<span>'+r.label+'</span></div>'
+  ).join('');
+}
+
+function handleRoleChange(val){
+  state.role = val;
+  saveData();
+  showToast('Switched to ' + val + ' role.');
+  renderMain();
+}
+
+const PAGE_META = {
+  dashboard: ['Dashboard', 'Overview of cargo, stock, customers and documents'],
+  cargo: ['Cargo Tracking', 'Record and track incoming containers and shipments'],
+  inventory: ['Inventory', 'Manage Force and Mahindra spare parts, vehicles and equipment'],
+  customers: ['Customers', 'Customer records and full purchase history'],
+  documents: ['Documents', 'Generate quotations, invoices, delivery notes and agreements'],
+  settings: ['Settings', 'Company details, VAT rate and system preferences'],
+};
+
+function navigate(route){
+  currentRoute = route;
+  renderNav();
+  const meta = PAGE_META[route];
+  byId('page-title').textContent = meta[0];
+  byId('page-subtitle').textContent = meta[1];
+  renderMain();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+function renderMain(){
+  const c = byId('main-content');
+  if(!c) return;
+  if(currentRoute === 'dashboard') c.innerHTML = renderDashboard();
+  else if(currentRoute === 'cargo') c.innerHTML = renderCargoView();
+  else if(currentRoute === 'inventory') c.innerHTML = renderInventoryView();
+  else if(currentRoute === 'customers') c.innerHTML = renderCustomersView();
+  else if(currentRoute === 'documents') c.innerHTML = renderDocumentsView();
+  else if(currentRoute === 'settings') c.innerHTML = renderSettingsView();
+}
+
+/* ===================== DASHBOARD ===================== */
+function renderDashboard(){
+  const lowStockCount = state.inventory.filter(i => Number(i.stock) <= state.settings.lowStockThreshold).length;
+  const thisMonth = todayStr().slice(0,7);
+  const docsThisMonth = state.documents.filter(d => (d.date||'').slice(0,7) === thisMonth).length;
+  const totalCargo = state.cargo.length;
+  const totalInv = state.inventory.length;
+  const totalCustomers = state.customers.length;
+
+  const recentDocs = [...state.documents].sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,6);
+  const recentCargo = [...state.cargo].sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5);
+
+  let html = '<div class="plate-row">' +
+    plateHtml('Cargo Records', totalCargo, totalCargo===0?'No shipments logged yet':'Tracked containers') +
+    plateHtml('Inventory Items', totalInv, 'Across Force & Mahindra') +
+    plateHtml('Low Stock Alerts', lowStockCount, 'At or below '+state.settings.lowStockThreshold+' units', lowStockCount>0) +
+    plateHtml('Customers', totalCustomers, 'Registered accounts') +
+    plateHtml('Documents This Month', docsThisMonth, 'Generated in '+formatDate(todayStr()).split(' ').slice(1).join(' ')) +
+  '</div>';
+
+  html += '<div class="form-grid">';
+
+  html += '<div class="card">' +
+    '<h2 class="section-title">Recent Documents</h2>' +
+    (recentDocs.length ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Number</th><th>Type</th><th>Customer</th><th>Date</th><th>Total</th></tr></thead><tbody>' +
+      recentDocs.map(d => {
+        const cust = state.customers.find(c=>c.id===d.customerId);
+        return '<tr class="row-clickable" onclick="viewDocument(\''+d.id+'\')"><td><span class="code-tag">'+escapeHtml(d.number)+'</span></td><td>'+escapeHtml(d.type)+'</td><td>'+escapeHtml(cust?cust.fullName:'—')+'</td><td>'+formatDate(d.date)+'</td><td>'+formatMoney(d.total)+'</td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : emptyState('documents', 'No documents yet', 'Generated quotations and invoices will show up here.', "navigate('documents')", 'Create a document')) +
+  '</div>';
+
+  html += '<div class="card">' +
+    '<h2 class="section-title">Recent Cargo Entries</h2>' +
+    (recentCargo.length ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Tracking #</th><th>Container #</th><th>Status</th><th>Date</th></tr></thead><tbody>' +
+      recentCargo.map(c => '<tr class="row-clickable" onclick="navigate(\'cargo\')"><td><span class="code-tag">'+escapeHtml(c.trackingNumber)+'</span></td><td>'+escapeHtml(c.containerNumber||'—')+'</td><td>'+statusBadge(c.status)+'</td><td>'+formatDate(c.dateOfEntry)+'</td></tr>').join('') +
+      '</tbody></table></div>'
+      : emptyState('cargo', 'No cargo logged yet', 'Record incoming containers and shipments to track them here.', "navigate('cargo')", 'Log cargo')) +
+  '</div>';
+
+  html += '</div>';
+
+  if(lowStockCount > 0){
+    const items = state.inventory.filter(i => Number(i.stock) <= state.settings.lowStockThreshold).slice(0,8);
+    html += '<div class="card">' +
+      '<h2 class="section-title">Low Stock — Needs Reordering</h2>' +
+      '<div class="table-wrap"><table class="data-table"><thead><tr><th>Brand</th><th>Item</th><th>Category</th><th>Stock</th></tr></thead><tbody>' +
+      items.map(i => '<tr><td>'+brandChip(i.brand)+'</td><td>'+escapeHtml(i.name)+'</td><td>'+escapeHtml(i.category)+'</td><td><span class="badge low-stock">'+i.stock+' left</span></td></tr>').join('') +
+      '</tbody></table></div></div>';
+  }
+
+  return html;
+}
+
+function plateHtml(label, value, sub, alert){
+  return '<div class="plate'+(alert?' alert':'')+'"><div class="plate-corner"></div>' +
+    '<span class="plate-label">'+escapeHtml(label)+'</span>' +
+    '<div class="plate-value">'+value+'</div>' +
+    '<div class="plate-sub">'+escapeHtml(sub)+'</div></div>';
+}
+
+function emptyState(iconName, title, body, onclickAction, ctaLabel){
+  return '<div class="empty-state">' +
+    '<div class="empty-icon">'+(ICONS[iconName]||'')+'</div>' +
+    '<h3>'+escapeHtml(title)+'</h3><p>'+escapeHtml(body)+'</p>' +
+    (ctaLabel ? '<button class="btn btn-primary btn-sm" onclick="'+onclickAction+'">'+icon('plus')+escapeHtml(ctaLabel)+'</button>' : '') +
+  '</div>';
+}
+
+function statusBadge(status){
+  const map = {
+    'Pending':'status-pending','In Transit':'status-transit','Cleared':'status-cleared',
+    'Delivered':'status-delivered','Released':'status-released'
+  };
+  const cls = map[status] || 'status-pending';
+  return '<span class="badge '+cls+'">'+escapeHtml(status||'Pending')+'</span>';
+}
+
+function brandChip(brand){
+  const cls = brand === 'Force' ? 'force' : 'mahindra';
+  return '<span class="brand-chip '+cls+'">'+escapeHtml(brand)+'</span>';
+}
+/* ===================== CARGO MODULE ===================== */
+let cargoSearch = '';
+const CARGO_STATUSES = ['Pending','In Transit','Cleared','Delivered','Released'];
+
+function renderCargoView(){
+  const term = cargoSearch.trim().toLowerCase();
+  let rows = state.cargo;
+  if(term){
+    rows = rows.filter(c =>
+      (c.trackingNumber||'').toLowerCase().includes(term) ||
+      (c.containerNumber||'').toLowerCase().includes(term) ||
+      (c.billOfLading||'').toLowerCase().includes(term) ||
+      (c.description||'').toLowerCase().includes(term)
+    );
+  }
+  rows = [...rows].sort((a,b)=> (b.dateOfEntry||'').localeCompare(a.dateOfEntry||''));
+
+  let html = '<div class="card card-flush">' +
+    '<div style="padding:20px 20px 0;">' +
+    '<div class="toolbar"><div class="toolbar-left">' +
+      '<input class="search-input" placeholder="Search tracking #, container #, BL…" value="'+escapeHtml(cargoSearch)+'" oninput="cargoSearch=this.value; renderMain();">' +
+      '<span class="faint">'+rows.length+' record'+(rows.length===1?'':'s')+'</span>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="openCargoForm()">'+icon('plus')+'Log Cargo</button>' +
+    '</div></div>';
+
+  if(rows.length === 0){
+    html += emptyState('cargo', state.cargo.length? 'No matching cargo records' : 'No cargo logged yet',
+      state.cargo.length? 'Try a different search term.' : 'Record incoming containers as they arrive — tracking number, container number, bill of lading and more.',
+      "openCargoForm()", state.cargo.length? null : 'Log your first cargo entry');
+  } else {
+    html += '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+      '<th>Tracking #</th><th>Container #</th><th>Bill of Lading</th><th>Description</th><th>Date of Entry</th><th>Status</th><th></th>' +
+      '</tr></thead><tbody>';
+    rows.forEach(c => {
+      html += '<tr>' +
+        '<td><span class="code-tag">'+escapeHtml(c.trackingNumber)+'</span></td>' +
+        '<td>'+escapeHtml(c.containerNumber||'—')+'</td>' +
+        '<td>'+escapeHtml(c.billOfLading||'—')+'</td>' +
+        '<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(c.description||'—')+'</td>' +
+        '<td>'+formatDate(c.dateOfEntry)+'</td>' +
+        '<td>'+statusBadge(c.status)+'</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="btn btn-outline btn-sm btn-icon" onclick="openCargoForm(\''+c.id+'\')" title="Edit">'+icon('edit')+'</button>' +
+          (isAdmin() ? '<button class="btn btn-danger-outline btn-sm btn-icon" onclick="deleteCargo(\''+c.id+'\')" title="Delete">'+icon('trash')+'</button>' : '') +
+        '</div></td>' +
+      '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function openCargoForm(id){
+  const editing = id ? state.cargo.find(c=>c.id===id) : null;
+  const v = editing || { trackingNumber:'', containerNumber:'', billOfLading:'', billOfEntry:'', receiptOfPayment:'', description:'', dateOfEntry:todayStr(), status:'Pending' };
+  const body =
+    '<div class="form-grid">' +
+      field('Tracking Number','cf-tracking', v.trackingNumber, true) +
+      field('Container Number','cf-container', v.containerNumber) +
+      field('Bill of Lading (BL)','cf-bl', v.billOfLading) +
+      field('Bill of Entry (BOE)','cf-boe', v.billOfEntry) +
+      field('Receipt of Payment','cf-receipt', v.receiptOfPayment) +
+      field('Date of Entry','cf-date', v.dateOfEntry, false, 'date') +
+      selectField('Status','cf-status', CARGO_STATUSES, v.status) +
+      '<div class="field span2"><label>Description of Goods Inside Container</label><textarea id="cf-desc">'+escapeHtml(v.description)+'</textarea></div>' +
+    '</div>';
+  openModal(body, {
+    title: editing ? 'Edit Cargo Record' : 'Log New Cargo',
+    foot: '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>' +
+          '<button class="btn btn-primary" onclick="saveCargoForm('+(editing?("'"+id+"'"):'null')+')">Save Record</button>'
+  });
+}
+
+function field(label, id, value, required, type){
+  return '<div class="field"><label>'+escapeHtml(label)+(required?' <span class="req">*</span>':'')+'</label>' +
+    '<input id="'+id+'" type="'+(type||'text')+'" value="'+escapeHtml(value||'')+'"></div>';
+}
+function selectField(label, id, options, selected){
+  return '<div class="field"><label>'+escapeHtml(label)+'</label><select id="'+id+'">' +
+    options.map(o => '<option value="'+escapeHtml(o)+'"'+(o===selected?' selected':'')+'>'+escapeHtml(o)+'</option>').join('') +
+    '</select></div>';
+}
+
+async function saveCargoForm(id){
+  const trackingNumber = byId('cf-tracking').value.trim();
+  if(!trackingNumber){ showToast('Tracking number is required.', 'error'); return; }
+  const data = {
+    trackingNumber,
+    containerNumber: byId('cf-container').value.trim(),
+    billOfLading: byId('cf-bl').value.trim(),
+    billOfEntry: byId('cf-boe').value.trim(),
+    receiptOfPayment: byId('cf-receipt').value.trim(),
+    description: byId('cf-desc').value.trim(),
+    dateOfEntry: byId('cf-date').value || todayStr(),
+    status: byId('cf-status').value,
+  };
+  if(id){
+    const rec = state.cargo.find(c=>c.id===id);
+    Object.assign(rec, data);
+  } else {
+    data.id = uid();
+    data.createdAt = new Date().toISOString();
+    state.cargo.push(data);
+  }
+  await saveData();
+  closeModal();
+  showToast(id ? 'Cargo record updated.' : 'Cargo record saved.', 'success');
+  renderMain();
+}
+
+async function deleteCargo(id){
+  if(!requireAdmin('delete cargo records')) return;
+  if(!confirm('Delete this cargo record? This cannot be undone.')) return;
+  state.cargo = state.cargo.filter(c=>c.id!==id);
+  await saveData();
+  showToast('Cargo record deleted.');
+  renderMain();
+}
+/* ===================== INVENTORY MODULE ===================== */
+let invBrand = 'Force';
+let invCategory = 'Spare Parts';
+let invSearch = '';
+
+function renderInventoryView(){
+  if(!BRAND_CATEGORIES[invBrand].includes(invCategory)) invCategory = BRAND_CATEGORIES[invBrand][0];
+
+  let html = '<div class="tabbar">' +
+    Object.keys(BRAND_CATEGORIES).map(b =>
+      '<button class="tabbtn'+(invBrand===b?' active':'')+'" onclick="invBrand=\''+b+'\'; invCategory=BRAND_CATEGORIES[\''+b+'\'][0]; renderMain();">'+b+'</button>'
+    ).join('') + '</div>';
+
+  html += '<div class="subtab-row">' +
+    BRAND_CATEGORIES[invBrand].map(cat =>
+      '<button class="subtab'+(invCategory===cat?' active':'')+'" onclick="invCategory=\''+cat+'\'; renderMain();">'+cat+'</button>'
+    ).join('') + '</div>';
+
+  const items = state.inventory.filter(i => i.brand===invBrand && i.category===invCategory);
+  const term = invSearch.trim().toLowerCase();
+  let rows = term ? items.filter(i => (i.name||'').toLowerCase().includes(term) || (i.code||'').toLowerCase().includes(term)) : items;
+  rows = [...rows].sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+
+  const isPart = invCategory === 'Spare Parts';
+  const totalValue = items.reduce((s,i)=> s + (Number(i.costPrice)||0) * (Number(i.stock)||0), 0);
+  const lowCount = items.filter(i => Number(i.stock) <= state.settings.lowStockThreshold).length;
+
+  html += '<div class="plate-row" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">' +
+    plateHtml('Items in '+invCategory, items.length, invBrand) +
+    plateHtml('Stock Valuation', formatMoney(totalValue), 'At cost price') +
+    plateHtml('Low Stock', lowCount, 'At or below '+state.settings.lowStockThreshold+' units', lowCount>0) +
+  '</div>';
+
+  html += '<div class="card card-flush"><div style="padding:20px 20px 0;">' +
+    '<div class="toolbar"><div class="toolbar-left">' +
+    '<input class="search-input" placeholder="Search '+invCategory.toLowerCase()+'…" value="'+escapeHtml(invSearch)+'" oninput="invSearch=this.value; renderMain();">' +
+    '<span class="faint">'+rows.length+' item'+(rows.length===1?'':'s')+'</span>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="openInventoryForm()">'+icon('plus')+'Add '+(isPart?'Spare Part':'Item')+'</button>' +
+    '</div></div>';
+
+  if(rows.length === 0){
+    html += emptyState('inventory', items.length? 'No matching items' : 'No '+invCategory.toLowerCase()+' yet for '+invBrand,
+      items.length? 'Try a different search term.' : 'Add your first item to start tracking stock and pricing.',
+      'openInventoryForm()', items.length? null : 'Add item');
+  } else {
+    html += '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+      '<th>'+(isPart?'Part Number':'Model / Variant')+'</th><th>'+(isPart?'Part Name':'Item Name')+'</th>' +
+      '<th>Stock</th><th>Cost Price</th><th>Selling Price</th><th>VAT Incl. Price</th><th></th>' +
+      '</tr></thead><tbody>';
+    rows.forEach(i => {
+      const low = Number(i.stock) <= state.settings.lowStockThreshold;
+      html += '<tr>' +
+        '<td><span class="code-tag">'+escapeHtml(i.code||'—')+'</span></td>' +
+        '<td>'+escapeHtml(i.name)+'</td>' +
+        '<td><span class="badge '+(low?'low-stock':'ok-stock')+'">'+i.stock+'</span></td>' +
+        '<td>'+formatMoney(i.costPrice)+'</td>' +
+        '<td>'+formatMoney(i.sellingPrice)+'</td>' +
+        '<td>'+formatMoney(i.vatInclusivePrice)+'</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="btn btn-outline btn-sm btn-icon" onclick="openInventoryForm(\''+i.id+'\')" title="Edit">'+icon('edit')+'</button>' +
+          (isAdmin() ? '<button class="btn btn-danger-outline btn-sm btn-icon" onclick="deleteInventory(\''+i.id+'\')" title="Delete">'+icon('trash')+'</button>' : '') +
+        '</div></td>' +
+      '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function openInventoryForm(id){
+  const editing = id ? state.inventory.find(i=>i.id===id) : null;
+  const brand = editing ? editing.brand : invBrand;
+  const category = editing ? editing.category : invCategory;
+  const isPart = category === 'Spare Parts';
+  const v = editing || { code:'', name:'', stock:0, costPrice:0, sellingPrice:0, vatInclusivePrice:0 };
+
+  const body =
+    '<div class="form-grid">' +
+      '<div class="field"><label>Brand</label><select id="if-brand" onchange="invFormBrandChanged()">' +
+        Object.keys(BRAND_CATEGORIES).map(b=>'<option value="'+b+'"'+(b===brand?' selected':'')+'>'+b+'</option>').join('') +
+      '</select></div>' +
+      '<div class="field"><label>Category</label><select id="if-category">' +
+        BRAND_CATEGORIES[brand].map(c=>'<option value="'+c+'"'+(c===category?' selected':'')+'>'+c+'</option>').join('') +
+      '</select></div>' +
+      field(isPart?'Part Number':'Model / Variant','if-code', v.code) +
+      field(isPart?'Part Name':'Item Name','if-name', v.name, true) +
+      field('Available Stock','if-stock', v.stock, true, 'number') +
+      field('Cost Price (Rs)','if-cost', v.costPrice, true, 'number') +
+      field('Selling Price (Rs)','if-sell', v.sellingPrice, true, 'number') +
+      field('VAT Inclusive Selling Price (Rs)','if-vatsell', v.vatInclusivePrice, false, 'number') +
+    '</div>' +
+    '<p class="field-hint" style="margin-top:10px;">Tip: VAT inclusive price will auto-fill at '+state.settings.vatRate+'% if left blank.</p>';
+
+  openModal(body, {
+    title: editing ? 'Edit Inventory Item' : 'Add Inventory Item',
+    foot: '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>' +
+          '<button class="btn btn-primary" onclick="saveInventoryForm('+(editing?("'"+id+"'"):'null')+')">Save Item</button>'
+  });
+}
+
+function invFormBrandChanged(){
+  const b = byId('if-brand').value;
+  const catSel = byId('if-category');
+  catSel.innerHTML = BRAND_CATEGORIES[b].map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+}
+
+async function saveInventoryForm(id){
+  const name = byId('if-name').value.trim();
+  if(!name){ showToast('Name is required.', 'error'); return; }
+  const sellingPrice = parseFloat(byId('if-sell').value) || 0;
+  let vatInclusive = parseFloat(byId('if-vatsell').value);
+  if(!vatInclusive){ vatInclusive = +(sellingPrice * (1 + state.settings.vatRate/100)).toFixed(2); }
+
+  const data = {
+    brand: byId('if-brand').value,
+    category: byId('if-category').value,
+    code: byId('if-code').value.trim(),
+    name,
+    stock: parseFloat(byId('if-stock').value) || 0,
+    costPrice: parseFloat(byId('if-cost').value) || 0,
+    sellingPrice,
+    vatInclusivePrice: vatInclusive,
+  };
+  if(id){
+    const rec = state.inventory.find(i=>i.id===id);
+    Object.assign(rec, data);
+  } else {
+    data.id = uid();
+    data.createdAt = new Date().toISOString();
+    state.inventory.push(data);
+    invBrand = data.brand; invCategory = data.category;
+  }
+  await saveData();
+  closeModal();
+  showToast(id ? 'Item updated.' : 'Item added to inventory.', 'success');
+  renderMain();
+}
+
+async function deleteInventory(id){
+  if(!requireAdmin('delete inventory items')) return;
+  if(!confirm('Delete this inventory item? This cannot be undone.')) return;
+  state.inventory = state.inventory.filter(i=>i.id!==id);
+  await saveData();
+  showToast('Item removed from inventory.');
+  renderMain();
+}
+/* ===================== CUSTOMERS MODULE ===================== */
+let customerSearch = '';
+
+function renderCustomersView(){
+  const term = customerSearch.trim().toLowerCase();
+  let rows = state.customers;
+  if(term){
+    rows = rows.filter(c =>
+      (c.fullName||'').toLowerCase().includes(term) ||
+      (c.contact||'').toLowerCase().includes(term) ||
+      (c.email||'').toLowerCase().includes(term)
+    );
+  }
+  rows = [...rows].sort((a,b)=> (a.fullName||'').localeCompare(b.fullName||''));
+
+  let html = '<div class="card card-flush"><div style="padding:20px 20px 0;">' +
+    '<div class="toolbar"><div class="toolbar-left">' +
+    '<input class="search-input" placeholder="Search name, phone, email…" value="'+escapeHtml(customerSearch)+'" oninput="customerSearch=this.value; renderMain();">' +
+    '<span class="faint">'+rows.length+' customer'+(rows.length===1?'':'s')+'</span>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="openCustomerForm()">'+icon('plus')+'Add Customer</button>' +
+    '</div></div>';
+
+  if(rows.length === 0){
+    html += emptyState('customers', state.customers.length? 'No matching customers' : 'No customers yet',
+      state.customers.length? 'Try a different search term.' : 'Add a customer to start building their purchase history.',
+      'openCustomerForm()', state.customers.length? null : 'Add your first customer');
+  } else {
+    html += '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+      '<th>Name</th><th>Contact</th><th>Type</th><th>Documents</th><th></th>' +
+      '</tr></thead><tbody>';
+    rows.forEach(c => {
+      const docCount = state.documents.filter(d=>d.customerId===c.id).length;
+      html += '<tr class="row-clickable" onclick="viewCustomer(\''+c.id+'\')">' +
+        '<td><strong>'+escapeHtml(c.fullName)+'</strong></td>' +
+        '<td>'+escapeHtml(c.contact||'—')+(c.email?'<br><span class="faint">'+escapeHtml(c.email)+'</span>':'')+'</td>' +
+        '<td><span class="badge '+(c.customerType==='Vehicle'?'status-transit':'status-released')+'">'+(c.customerType==='Vehicle'?'Vehicle':'Parts / Implements')+'</span></td>' +
+        '<td>'+docCount+' document'+(docCount===1?'':'s')+'</td>' +
+        '<td onclick="event.stopPropagation()"><div class="row-actions">' +
+          '<button class="btn btn-outline btn-sm btn-icon" onclick="openCustomerForm(\''+c.id+'\')" title="Edit">'+icon('edit')+'</button>' +
+          (isAdmin() ? '<button class="btn btn-danger-outline btn-sm btn-icon" onclick="deleteCustomer(\''+c.id+'\')" title="Delete">'+icon('trash')+'</button>' : '') +
+        '</div></td>' +
+      '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function openCustomerForm(id){
+  const editing = id ? state.customers.find(c=>c.id===id) : null;
+  const v = editing || { fullName:'', address:'', contact:'', email:'', nationalId:'', customerType:'Vehicle' };
+  const body = '<div class="form-grid">' +
+    field('Full Name','cu-name', v.fullName, true) +
+    field('Contact Number','cu-contact', v.contact) +
+    field('Email Address','cu-email', v.email) +
+    field('National ID / BRN','cu-nid', v.nationalId) +
+    selectField('Customer Type','cu-type', ['Vehicle','Spare Parts / Implements'], v.customerType==='Vehicle'?'Vehicle':'Spare Parts / Implements') +
+    '<div class="field span2"><label>Address</label><textarea id="cu-address">'+escapeHtml(v.address)+'</textarea></div>' +
+  '</div>' +
+  '<p class="field-hint" style="margin-top:8px;">Customer type determines the expected document checklist shown in their purchase history timeline.</p>';
+
+  openModal(body, {
+    title: editing ? 'Edit Customer' : 'Add Customer',
+    foot: '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>' +
+          '<button class="btn btn-primary" onclick="saveCustomerForm('+(editing?("'"+id+"'"):'null')+')">Save Customer</button>'
+  });
+}
+
+async function saveCustomerForm(id){
+  const fullName = byId('cu-name').value.trim();
+  if(!fullName){ showToast('Full name is required.', 'error'); return; }
+  const data = {
+    fullName,
+    contact: byId('cu-contact').value.trim(),
+    email: byId('cu-email').value.trim(),
+    nationalId: byId('cu-nid').value.trim(),
+    address: byId('cu-address').value.trim(),
+    customerType: byId('cu-type').value === 'Vehicle' ? 'Vehicle' : 'SparePartsImplement',
+  };
+  if(id){
+    const rec = state.customers.find(c=>c.id===id);
+    Object.assign(rec, data);
+  } else {
+    data.id = uid();
+    data.createdAt = new Date().toISOString();
+    state.customers.push(data);
+  }
+  await saveData();
+  closeModal();
+  showToast(id ? 'Customer updated.' : 'Customer added.', 'success');
+  renderMain();
+}
+
+async function deleteCustomer(id){
+  if(!requireAdmin('delete customers')) return;
+  const docCount = state.documents.filter(d=>d.customerId===id).length;
+  const msg = docCount>0
+    ? 'This customer has '+docCount+' document(s) on file. Deleting the customer will keep those documents but remove the customer link. Continue?'
+    : 'Delete this customer? This cannot be undone.';
+  if(!confirm(msg)) return;
+  state.customers = state.customers.filter(c=>c.id!==id);
+  await saveData();
+  showToast('Customer deleted.');
+  renderMain();
+}
+
+function viewCustomer(id){
+  const c = state.customers.find(x=>x.id===id);
+  if(!c) return;
+  const docs = state.documents.filter(d=>d.customerId===id).sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+  const flow = c.customerType === 'Vehicle' ? VEHICLE_DOC_FLOW : PARTS_DOC_FLOW;
+  const haveTypes = new Set(docs.map(d=>d.type));
+
+  let html = '<div class="form-grid" style="margin-bottom:18px;">' +
+    '<div class="field"><label>Contact</label><div>'+escapeHtml(c.contact||'—')+'</div></div>' +
+    '<div class="field"><label>Email</label><div>'+escapeHtml(c.email||'—')+'</div></div>' +
+    '<div class="field"><label>National ID / BRN</label><div>'+escapeHtml(c.nationalId||'—')+'</div></div>' +
+    '<div class="field"><label>Customer Type</label><div>'+(c.customerType==='Vehicle'?'Vehicle Purchase':'Spare Parts / Implements')+'</div></div>' +
+    '<div class="field span2"><label>Address</label><div>'+escapeHtml(c.address||'—')+'</div></div>' +
+  '</div>';
+
+  html += '<h3 style="font-family:var(--font-display);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--primary);margin-bottom:10px;">Document Checklist</h3>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;">' +
+    flow.map(t => '<span class="badge '+(haveTypes.has(t)?'ok-stock':'status-pending')+'">'+(haveTypes.has(t)?'✓ ':'○ ')+t+'</span>').join('') +
+  '</div>';
+
+  html += '<h3 style="font-family:var(--font-display);font-size:13px;text-transform:uppercase;letter-spacing:0.5px;color:var(--primary);margin-bottom:10px;">Purchase History Timeline</h3>';
+  if(docs.length === 0){
+    html += '<p class="muted">No documents generated for this customer yet.</p>';
+  } else {
+    html += '<div style="border-left:2px solid var(--line-strong);padding-left:18px;display:flex;flex-direction:column;gap:16px;">';
+    docs.forEach(d => {
+      html += '<div style="position:relative;">' +
+        '<div style="position:absolute;left:-23px;top:3px;width:9px;height:9px;border-radius:50%;background:var(--accent);"></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
+          '<div><span class="code-tag">'+escapeHtml(d.number)+'</span> <strong style="margin-left:6px;">'+escapeHtml(d.type)+'</strong></div>' +
+          '<span class="faint">'+formatDate(d.date)+'</span>' +
+        '</div>' +
+        '<div class="muted" style="margin-top:3px;">Total: '+formatMoney(d.total)+'</div>' +
+        '<button class="btn-text" onclick="closeModal(); viewDocument(\''+d.id+'\');">View document →</button>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  openModal(html, {
+    title: c.fullName,
+    wide: true,
+    foot: '<button class="btn btn-outline" onclick="closeModal()">Close</button>' +
+          '<button class="btn btn-primary" onclick="closeModal(); openDocBuilder(null, \''+c.id+'\');">'+icon('plus')+'New Document for Customer</button>'
+  });
+}
+/* ===================== DOCUMENTS MODULE ===================== */
+let docSearch = '';
+let docTypeFilter = '';
+
+function renderDocumentsView(){
+  let html = '<h2 class="section-title">Generate a Document</h2>';
+  html += '<div class="doctype-grid">';
+  DOC_TYPES.forEach(t => {
+    const count = state.documents.filter(d=>d.type===t).length;
+    html += '<div class="doctype-card" onclick="openDocBuilder(\''+t+'\')">' +
+      '<div class="dt-prefix">'+DOC_PREFIX[t]+'</div>' +
+      '<div class="dt-name">'+t+'</div>' +
+      '<div class="dt-count">'+count+' generated</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  const term = docSearch.trim().toLowerCase();
+  let rows = state.documents;
+  if(docTypeFilter) rows = rows.filter(d=>d.type===docTypeFilter);
+  if(term){
+    rows = rows.filter(d => {
+      const cust = state.customers.find(c=>c.id===d.customerId);
+      return (d.number||'').toLowerCase().includes(term) || (cust && cust.fullName.toLowerCase().includes(term));
+    });
+  }
+  rows = [...rows].sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+
+  html += '<h2 class="section-title" style="margin-top:8px;">All Documents</h2>';
+  html += '<div class="card card-flush"><div style="padding:20px 20px 0;">' +
+    '<div class="toolbar"><div class="toolbar-left">' +
+    '<input class="search-input" placeholder="Search number or customer…" value="'+escapeHtml(docSearch)+'" oninput="docSearch=this.value; renderMain();">' +
+    '<select onchange="docTypeFilter=this.value; renderMain();" style="border:1px solid var(--line-strong);border-radius:6px;padding:8px 10px;font-size:13px;">' +
+      '<option value="">All types</option>' +
+      DOC_TYPES.map(t=>'<option value="'+t+'"'+(docTypeFilter===t?' selected':'')+'>'+t+'</option>').join('') +
+    '</select>' +
+    '<span class="faint">'+rows.length+' document'+(rows.length===1?'':'s')+'</span>' +
+    '</div></div></div>';
+
+  if(rows.length === 0){
+    html += '<div class="card">' + emptyState('documents', state.documents.length? 'No matching documents' : 'No documents generated yet',
+      state.documents.length? 'Try a different search or filter.' : 'Pick a document type above to generate your first one.', '', null) + '</div>';
+  } else {
+    html += '<div class="card card-flush"><div class="table-wrap"><table class="data-table"><thead><tr>' +
+      '<th>Number</th><th>Type</th><th>Customer</th><th>Date</th><th>Total</th><th></th>' +
+      '</tr></thead><tbody>';
+    rows.forEach(d => {
+      const cust = state.customers.find(c=>c.id===d.customerId);
+      html += '<tr class="row-clickable" onclick="viewDocument(\''+d.id+'\')">' +
+        '<td><span class="code-tag">'+escapeHtml(d.number)+'</span></td>' +
+        '<td>'+escapeHtml(d.type)+'</td>' +
+        '<td>'+escapeHtml(cust?cust.fullName:'Unknown customer')+'</td>' +
+        '<td>'+formatDate(d.date)+'</td>' +
+        '<td>'+formatMoney(d.total)+'</td>' +
+        '<td onclick="event.stopPropagation()"><div class="row-actions">' +
+          '<button class="btn btn-outline btn-sm btn-icon" onclick="viewDocument(\''+d.id+'\')" title="View">'+icon('eye')+'</button>' +
+          (isAdmin() ? '<button class="btn btn-danger-outline btn-sm btn-icon" onclick="deleteDocument(\''+d.id+'\')" title="Delete">'+icon('trash')+'</button>' : '') +
+        '</div></td>' +
+      '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+  }
+  return html;
+}
+
+async function deleteDocument(id){
+  if(!requireAdmin('delete documents')) return;
+  if(!confirm('Delete this document? This cannot be undone and will not restore any stock that was deducted.')) return;
+  state.documents = state.documents.filter(d=>d.id!==id);
+  await saveData();
+  showToast('Document deleted.');
+  renderMain();
+}
+
+const DEFAULT_TERMS = {
+  'Quotation': 'This quotation is valid for 14 days from the date of issue. Prices are subject to change without prior notice. Availability of stock is not guaranteed until full payment is received.',
+  'Proforma Invoice': 'This proforma invoice is issued for payment processing purposes and is not a tax invoice. Goods remain the property of the dealership until payment is received in full.',
+  'VAT Invoice': 'Thank you for your business. This is a VAT invoice issued in accordance with applicable tax regulations.',
+  'Purchase Order': 'Please supply the goods/services listed above on the terms agreed between both parties.',
+  'Delivery Note': 'Goods listed above have been delivered in good condition. Please inspect on receipt and report any discrepancy within 48 hours.',
+  'Deed of Sale': 'This Deed of Sale confirms the transfer of ownership of the item(s) listed above from the Dealership to the Buyer, subject to full payment having been received.',
+  'Agreement': 'This Agreement is entered into between the Dealership and the Customer named above, governing the terms of sale described in this document.'
+};
+const LEGAL_DOC_TYPES = ['Deed of Sale','Agreement'];
+const SIGNATURE_DOC_TYPES = ['Delivery Note','Deed of Sale','Agreement','Purchase Order'];
+/* ===================== DOCUMENT BUILDER ===================== */
+let builderState = null;
+
+function openDocBuilder(type, presetCustomerId){
+  builderState = {
+    type: type || 'Quotation',
+    customerId: presetCustomerId || '',
+    date: todayStr(),
+    items: [ blankLine() ],
+    notes: DEFAULT_TERMS[type || 'Quotation'],
+    pricesIncludeVat: (type === 'VAT Invoice' || type === 'Proforma Invoice'),
+    quickAdd: false,
+  };
+  openModal(builderBodyHtml(), {
+    title: 'New Document',
+    wide: true,
+    foot: '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>' +
+          '<button class="btn btn-primary" onclick="saveDocBuilder()">'+icon('plus')+'Generate Document</button>'
+  });
+}
+
+function blankLine(){ return { rowId: uid(), inventoryId:null, description:'', qty:1, unitPrice:0 }; }
+
+function builderBodyHtml(){
+  const b = builderState;
+  let html = '<div class="tabbar" style="margin-bottom:18px;">' +
+    DOC_TYPES.map(t => '<button class="tabbtn'+(b.type===t?' active':'')+'" onclick="switchBuilderType(\''+t+'\')">'+DOC_PREFIX[t]+'</button>').join('') +
+  '</div>';
+  html += '<div class="faint" style="margin-bottom:14px;">Creating a <strong style="color:var(--ink);">'+b.type+'</strong> — next number will be <span class="code-tag">'+previewDocNumber(b.type)+'</span></div>';
+
+  html += '<div class="form-grid">';
+  html += '<div class="field"><label>Customer <span class="req">*</span></label><select id="db-customer" onchange="builderState.customerId=this.value;">' +
+    '<option value="">— Select customer —</option>' +
+    [...state.customers].sort((a,b2)=>a.fullName.localeCompare(b2.fullName)).map(c=>'<option value="'+c.id+'"'+(b.customerId===c.id?' selected':'')+'>'+escapeHtml(c.fullName)+'</option>').join('') +
+  '</select><button type="button" class="btn-text" onclick="toggleQuickAddCustomer()">'+(b.quickAdd?'− Cancel new customer':'+ Quick add new customer')+'</button></div>';
+  html += '<div class="field"><label>Document Date</label><input id="db-date" type="date" value="'+escapeHtml(b.date)+'" oninput="builderState.date=this.value;"></div>';
+  html += '</div>';
+
+  html += '<div id="quickadd-box" style="display:'+(b.quickAdd?'block':'none')+';background:var(--surface-alt);border-radius:8px;padding:14px;margin:10px 0;">' +
+    '<div class="form-grid">' +
+      '<div class="field"><label>New Customer Name</label><input id="qa-name" type="text" value="'+escapeHtml(b.quickAddName||'')+'" oninput="builderState.quickAddName=this.value;"></div>' +
+      '<div class="field"><label>Contact Number</label><input id="qa-contact" type="text" value="'+escapeHtml(b.quickAddContact||'')+'" oninput="builderState.quickAddContact=this.value;"></div>' +
+    '</div></div>';
+
+  html += '<div style="margin-top:18px;">' +
+    '<div class="lineitem-head"><span>Description</span><span>Qty</span><span>Unit Price</span><span>Total</span><span></span></div>' +
+    '<div id="li-container">'+renderLineItemsRows()+'</div>' +
+    '<button type="button" class="btn btn-outline btn-sm" onclick="addLineItem()">'+icon('plus')+'Add Line</button>' +
+  '</div>';
+
+  html += '<div style="margin-top:16px;display:flex;align-items:center;gap:8px;">' +
+    '<input type="checkbox" id="db-incvat" '+(b.pricesIncludeVat?'checked':'')+' onchange="builderState.pricesIncludeVat=this.checked; renderTotalsBox();" style="width:auto;">' +
+    '<label for="db-incvat" style="font-size:12.5px;color:var(--ink-soft);">Line prices already include VAT ('+state.settings.vatRate+'%)</label>' +
+  '</div>';
+
+  html += '<div id="totals-box">'+totalsBoxHtml()+'</div>';
+
+  html += '<div class="field span2" style="margin-top:18px;"><label>Notes / Terms'+(LEGAL_DOC_TYPES.includes(b.type)?' <span class="faint">— review before treating as a binding document</span>':'')+'</label>' +
+    '<textarea id="db-notes" rows="4" oninput="builderState.notes=this.value;">'+escapeHtml(b.notes)+'</textarea></div>';
+
+  return html;
+}
+
+function toggleQuickAddCustomer(){
+  builderState.quickAdd = !builderState.quickAdd;
+  refreshBuilder();
+}
+
+function switchBuilderType(t){
+  builderState.type = t;
+  builderState.notes = DEFAULT_TERMS[t];
+  builderState.pricesIncludeVat = (t === 'VAT Invoice' || t === 'Proforma Invoice');
+  refreshBuilder();
+}
+
+function refreshBuilder(){
+  byId('modal-container').querySelector('.modal-body').innerHTML = builderBodyHtml();
+}
+
+function inventoryOptionsHtml(selectedId){
+  let html = '';
+  Object.keys(BRAND_CATEGORIES).forEach(brand=>{
+    BRAND_CATEGORIES[brand].forEach(cat=>{
+      const items = state.inventory.filter(i=>i.brand===brand && i.category===cat);
+      if(items.length===0) return;
+      html += '<optgroup label="'+brand+' — '+cat+'">';
+      items.forEach(i=>{
+        html += '<option value="'+i.id+'"'+(selectedId===i.id?' selected':'')+'>'+escapeHtml(i.name)+(i.code?' ('+escapeHtml(i.code)+')':'')+' — '+formatMoney(i.sellingPrice)+'</option>';
+      });
+      html += '</optgroup>';
+    });
+  });
+  return html;
+}
+
+function renderLineItemsRows(){
+  return builderState.items.map((item, idx) => {
+    const lineTotal = (Number(item.qty)||0) * (Number(item.unitPrice)||0);
+    return '<div class="lineitem-row">' +
+      '<div>' +
+        '<select onchange="pickInventoryForLine('+idx+', this.value)" style="margin-bottom:4px;width:100%;font-size:11.5px;padding:5px 7px;">' +
+          '<option value="">Custom line item…</option>' +
+          inventoryOptionsHtml(item.inventoryId) +
+        '</select>' +
+        '<input type="text" value="'+escapeHtml(item.description)+'" placeholder="Description" oninput="updateLineField('+idx+',\'description\',this.value)">' +
+      '</div>' +
+      '<input type="number" min="0" step="1" value="'+item.qty+'" oninput="updateLineField('+idx+',\'qty\',this.value)">' +
+      '<input type="number" min="0" step="0.01" value="'+item.unitPrice+'" oninput="updateLineField('+idx+',\'unitPrice\',this.value)">' +
+      '<div id="li-total-'+idx+'" style="font-weight:600;padding-top:8px;">'+formatMoney(lineTotal)+'</div>' +
+      '<button type="button" class="remove-line" onclick="removeLineItem('+idx+')" title="Remove line">&times;</button>' +
+    '</div>';
+  }).join('');
+}
+
+function pickInventoryForLine(idx, invId){
+  const item = builderState.items[idx];
+  if(!invId){ item.inventoryId = null; }
+  else {
+    const inv = state.inventory.find(i=>i.id===invId);
+    if(inv){
+      item.inventoryId = inv.id;
+      item.description = inv.name + (inv.code? ' ('+inv.code+')':'');
+      item.unitPrice = builderState.pricesIncludeVat ? inv.vatInclusivePrice : inv.sellingPrice;
+      if(!item.qty) item.qty = 1;
+    }
+  }
+  byId('li-container').innerHTML = renderLineItemsRows();
+  renderTotalsBox();
+}
+
+function updateLineField(idx, field, value){
+  const item = builderState.items[idx];
+  if(field === 'qty' || field === 'unitPrice') item[field] = parseFloat(value) || 0;
+  else item[field] = value;
+  if(field !== 'description'){
+    const lineTotal = (Number(item.qty)||0) * (Number(item.unitPrice)||0);
+    const totalEl = byId('li-total-'+idx);
+    if(totalEl) totalEl.textContent = formatMoney(lineTotal);
+    renderTotalsBox();
+  }
+}
+
+function addLineItem(){
+  builderState.items.push(blankLine());
+  byId('li-container').innerHTML = renderLineItemsRows();
+  renderTotalsBox();
+}
+
+function removeLineItem(idx){
+  if(builderState.items.length <= 1){ showToast('A document needs at least one line item.', 'error'); return; }
+  builderState.items.splice(idx,1);
+  byId('li-container').innerHTML = renderLineItemsRows();
+  renderTotalsBox();
+}
+
+function computeBuilderTotals(){
+  const lines = builderState.items.map(i => (Number(i.qty)||0) * (Number(i.unitPrice)||0));
+  const sum = lines.reduce((a,b)=>a+b,0);
+  const rate = state.settings.vatRate/100;
+  let subtotal, vatAmount, total;
+  if(builderState.pricesIncludeVat){
+    total = sum;
+    subtotal = +(total / (1+rate)).toFixed(2);
+    vatAmount = +(total - subtotal).toFixed(2);
+  } else {
+    subtotal = +sum.toFixed(2);
+    vatAmount = +(subtotal * rate).toFixed(2);
+    total = +(subtotal + vatAmount).toFixed(2);
+  }
+  return { subtotal, vatAmount, total };
+}
+
+function totalsBoxHtml(){
+  const t = computeBuilderTotals();
+  return '<div class="totals-box">' +
+    '<div class="trow"><span>Subtotal (excl. VAT)</span><span>'+formatMoney(t.subtotal)+'</span></div>' +
+    '<div class="trow"><span>VAT ('+state.settings.vatRate+'%)</span><span>'+formatMoney(t.vatAmount)+'</span></div>' +
+    '<div class="trow grand"><span>Total</span><span>'+formatMoney(t.total)+'</span></div>' +
+  '</div>';
+}
+
+function renderTotalsBox(){
+  const el = byId('totals-box');
+  if(el) el.innerHTML = totalsBoxHtml();
+}
+
+function previewDocNumber(type){
+  const year = new Date().getFullYear();
+  const next = (state.counters[type]||0) + 1;
+  return DOC_PREFIX[type] + '-' + year + '-' + String(next).padStart(4,'0');
+}
+
+function nextDocNumber(type){
+  state.counters[type] = (state.counters[type]||0) + 1;
+  const year = new Date().getFullYear();
+  return DOC_PREFIX[type] + '-' + year + '-' + String(state.counters[type]).padStart(4,'0');
+}
+
+async function saveDocBuilder(){
+  const b = builderState;
+  let customerId = byId('db-customer') ? byId('db-customer').value : b.customerId;
+
+  if(b.quickAdd){
+    const qaName = byId('qa-name').value.trim();
+    if(!qaName){ showToast('Enter a name for the new customer.', 'error'); return; }
+    const newCust = {
+      id: uid(), fullName: qaName, contact: byId('qa-contact').value.trim(),
+      email:'', nationalId:'', address:'',
+      customerType: VEHICLE_DOC_FLOW.includes(b.type) ? 'Vehicle' : 'SparePartsImplement',
+      createdAt: new Date().toISOString()
+    };
+    state.customers.push(newCust);
+    customerId = newCust.id;
+  }
+  if(!customerId){ showToast('Select or add a customer first.', 'error'); return; }
+
+  const cleanItems = b.items
+    .map(i => ({ inventoryId:i.inventoryId, description:i.description.trim(), qty:Number(i.qty)||0, unitPrice:Number(i.unitPrice)||0, lineTotal: (Number(i.qty)||0)*(Number(i.unitPrice)||0) }))
+    .filter(i => i.description && i.qty > 0);
+  if(cleanItems.length === 0){ showToast('Add at least one line item with a description and quantity.', 'error'); return; }
+
+  const totals = computeBuilderTotals();
+  const date = byId('db-date').value || todayStr();
+  const notes = byId('db-notes').value;
+
+  const doc = {
+    id: uid(),
+    type: b.type,
+    number: nextDocNumber(b.type),
+    date,
+    customerId,
+    items: cleanItems,
+    pricesIncludeVat: b.pricesIncludeVat,
+    subtotal: totals.subtotal,
+    vatAmount: totals.vatAmount,
+    total: totals.total,
+    notes,
+    createdAt: new Date().toISOString(),
+    createdBy: state.role,
+  };
+
+  let stockWarning = false;
+  if(b.type === 'Delivery Note'){
+    cleanItems.forEach(li => {
+      if(li.inventoryId){
+        const inv = state.inventory.find(x=>x.id===li.inventoryId);
+        if(inv){
+          if(Number(inv.stock) < li.qty) stockWarning = true;
+          inv.stock = Math.max(0, Number(inv.stock) - li.qty);
+        }
+      }
+    });
+  }
+
+  state.documents.push(doc);
+  await saveData();
+  closeModal();
+  showToast('Document '+doc.number+' generated.' + (stockWarning? ' Note: stock for one or more items went to 0.':''), 'success');
+  docTypeFilter = '';
+  navigate('documents');
+  viewDocument(doc.id);
+}
+/* ===================== DOCUMENT PREVIEW / PRINT / PDF ===================== */
+function viewDocument(id){
+  const doc = state.documents.find(d=>d.id===id);
+  if(!doc) return;
+  const html = docPreviewHtml(doc);
+  openModal(html, {
+    title: doc.type + ' — ' + doc.number,
+    wide: true,
+    foot: '<button class="btn btn-outline" onclick="closeModal()">Close</button>' +
+          '<button class="btn btn-outline" onclick="printDocument(\''+doc.id+'\')">'+icon('print')+'Print</button>' +
+          '<button class="btn btn-primary" onclick="downloadDocumentPDF(\''+doc.id+'\')">'+icon('download')+'Download PDF</button>'
+  });
+}
+
+function docPreviewHtml(doc){
+  const cust = state.customers.find(c=>c.id===doc.customerId);
+  const company = state.settings.company;
+  const companyName = company.name || 'Your Dealership Name';
+
+  let rows = doc.items.map(li =>
+    '<tr><td>'+escapeHtml(li.description)+'</td><td style="text-align:right;">'+li.qty+'</td><td style="text-align:right;">'+formatMoney(li.unitPrice)+'</td><td style="text-align:right;">'+formatMoney(li.lineTotal)+'</td></tr>'
+  ).join('');
+
+  let html = '<div class="doc-preview" id="dp-'+doc.id+'">' +
+    '<div class="dp-head">' +
+      '<div><div class="dp-company">'+escapeHtml(companyName)+'</div>' +
+        (company.address? '<div class="muted" style="font-size:11.5px;max-width:260px;">'+escapeHtml(company.address)+'</div>':'') +
+        (company.phone||company.email? '<div class="muted" style="font-size:11.5px;">'+escapeHtml([company.phone,company.email].filter(Boolean).join(' · '))+'</div>':'') +
+        (company.vatNo? '<div class="muted" style="font-size:11.5px;">VAT No: '+escapeHtml(company.vatNo)+'</div>':'') +
+      '</div>' +
+      '<div class="dp-meta"><div class="dp-type">'+escapeHtml(doc.type)+'</div>' +
+        '<div style="margin-top:6px;">No: <strong>'+escapeHtml(doc.number)+'</strong></div>' +
+        '<div>Date: '+formatDate(doc.date)+'</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="dp-parties">' +
+      '<div><div class="dp-label">Bill To / Customer</div>' +
+        '<div><strong>'+escapeHtml(cust?cust.fullName:'Unknown customer')+'</strong></div>' +
+        (cust && cust.address? '<div>'+escapeHtml(cust.address)+'</div>':'') +
+        (cust && cust.contact? '<div>'+escapeHtml(cust.contact)+'</div>':'') +
+        (cust && cust.email? '<div>'+escapeHtml(cust.email)+'</div>':'') +
+        (cust && cust.nationalId? '<div>ID/BRN: '+escapeHtml(cust.nationalId)+'</div>':'') +
+      '</div>' +
+    '</div>' +
+    '<table><thead><tr><th>Description</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Amount</th></tr></thead><tbody>' +
+    rows + '</tbody></table>' +
+    '<div class="dp-totals">' +
+      '<div class="trow" style="display:flex;justify-content:space-between;padding:4px 0;"><span>Subtotal</span><span>'+formatMoney(doc.subtotal)+'</span></div>' +
+      '<div class="trow" style="display:flex;justify-content:space-between;padding:4px 0;"><span>VAT ('+state.settings.vatRate+'%)</span><span>'+formatMoney(doc.vatAmount)+'</span></div>' +
+      '<div class="trow" style="display:flex;justify-content:space-between;padding:6px 0;font-weight:800;border-top:1px solid var(--ink);"><span>Total</span><span>'+formatMoney(doc.total)+'</span></div>' +
+    '</div>' +
+    (doc.notes? '<div class="dp-terms">'+escapeHtml(doc.notes)+'</div>' : '');
+
+  if(SIGNATURE_DOC_TYPES.includes(doc.type)){
+    const labels = signatureLabels(doc.type);
+    html += '<div class="dp-sign">' +
+      '<div class="dp-sign-block">'+labels[0]+'</div>' +
+      '<div class="dp-sign-block">'+labels[1]+'</div>' +
+    '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function signatureLabels(type){
+  if(type === 'Delivery Note') return ['Delivered By — Name &amp; Signature', 'Received By — Name &amp; Signature'];
+  if(type === 'Deed of Sale') return ['Dealership Representative — Signature', 'Buyer — Signature'];
+  if(type === 'Agreement') return ['Dealership Representative — Signature', 'Customer — Signature'];
+  if(type === 'Purchase Order') return ['Authorized By — Signature', 'Supplier Acknowledgement — Signature'];
+  return ['Signature', 'Signature'];
+}
+
+function printDocument(id){
+  const doc = state.documents.find(d=>d.id===id);
+  if(!doc) return;
+  byId('print-area').innerHTML = docPreviewHtml(doc);
+  window.print();
+}
+
+function downloadDocumentPDF(id){
+  const doc = state.documents.find(d=>d.id===id);
+  if(!doc) return;
+  if(!window.jspdf){ showToast('PDF library failed to load. Try Print instead.', 'error'); return; }
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ unit:'pt', format:'a4' });
+  const cust = state.customers.find(c=>c.id===doc.customerId);
+  const company = state.settings.company;
+  const companyName = company.name || 'Your Dealership Name';
+  const marginX = 40;
+  let y = 50;
+
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(16);
+  pdf.text(companyName, marginX, y);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(9); pdf.setTextColor(90);
+  let infoY = y + 16;
+  [company.address, [company.phone, company.email].filter(Boolean).join('  ·  '), company.vatNo? 'VAT No: '+company.vatNo : ''].forEach(line=>{
+    if(line){ pdf.text(String(line), marginX, infoY); infoY += 12; }
+  });
+
+  pdf.setTextColor(20);
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(13);
+  pdf.text(doc.type.toUpperCase(), 555, y, { align:'right' });
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(10);
+  pdf.text('No: ' + doc.number, 555, y+16, { align:'right' });
+  pdf.text('Date: ' + formatDate(doc.date), 555, y+30, { align:'right' });
+
+  y = Math.max(infoY, y+50) + 14;
+  pdf.setDrawColor(20); pdf.setLineWidth(1.2);
+  pdf.line(marginX, y, 555, y);
+  y += 22;
+
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(110);
+  pdf.text('BILL TO / CUSTOMER', marginX, y);
+  y += 14;
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(11); pdf.setTextColor(20);
+  pdf.text(cust ? cust.fullName : 'Unknown customer', marginX, y);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(9.5);
+  y += 13;
+  [cust && cust.address, cust && cust.contact, cust && cust.email, cust && cust.nationalId ? 'ID/BRN: '+cust.nationalId : null].forEach(line=>{
+    if(line){ pdf.text(String(line), marginX, y); y += 12; }
+  });
+
+  y += 14;
+  const body = doc.items.map(li => [li.description, String(li.qty), formatMoney(li.unitPrice), formatMoney(li.lineTotal)]);
+  pdf.autoTable({
+    startY: y,
+    head: [['Description','Qty','Unit Price','Amount']],
+    body,
+    margin: { left:marginX, right:40 },
+    styles: { fontSize:9.5, cellPadding:6 },
+    headStyles: { fillColor:[36,67,94], textColor:255, fontStyle:'bold' },
+    columnStyles: { 1:{halign:'right',cellWidth:40}, 2:{halign:'right',cellWidth:90}, 3:{halign:'right',cellWidth:90} }
+  });
+
+  let finalY = pdf.lastAutoTable.finalY + 16;
+  const totalsX = 555;
+  pdf.setFontSize(10);
+  pdf.text('Subtotal', totalsX-150, finalY); pdf.text(formatMoney(doc.subtotal), totalsX, finalY, {align:'right'});
+  finalY += 15;
+  pdf.text('VAT ('+state.settings.vatRate+'%)', totalsX-150, finalY); pdf.text(formatMoney(doc.vatAmount), totalsX, finalY, {align:'right'});
+  finalY += 4;
+  pdf.setLineWidth(0.7); pdf.line(totalsX-150, finalY+4, totalsX, finalY+4);
+  finalY += 18;
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(11.5);
+  pdf.text('Total', totalsX-150, finalY); pdf.text(formatMoney(doc.total), totalsX, finalY, {align:'right'});
+
+  finalY += 30;
+  if(doc.notes){
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(100);
+    const split = pdf.splitTextToSize(doc.notes, 515);
+    pdf.text(split, marginX, finalY);
+    finalY += split.length * 11 + 20;
+  }
+
+  if(SIGNATURE_DOC_TYPES.includes(doc.type)){
+    finalY = Math.max(finalY, 700);
+    if(finalY > 760){ pdf.addPage(); finalY = 60; }
+    const labels = signatureLabels(doc.type).map(l=>l.replace(/&amp;/g,'&'));
+    pdf.setDrawColor(20); pdf.setLineWidth(0.8);
+    pdf.line(marginX, finalY, marginX+220, finalY);
+    pdf.line(330, finalY, 555, finalY);
+    pdf.setFontSize(8.5); pdf.setTextColor(90);
+    pdf.text(labels[0], marginX, finalY+12);
+    pdf.text(labels[1], 330, finalY+12);
+  }
+
+  pdf.save(doc.number + '.pdf');
+  showToast('PDF downloaded.', 'success');
+}
+/* ===================== SETTINGS MODULE ===================== */
+function renderSettingsView(){
+  if(!isAdmin()){
+    return '<div class="card">' + emptyState('settings', 'Administrator access required',
+      'Switch to the Administrator role in the top bar to view and change company settings.', '', null) + '</div>';
+  }
+  const c = state.settings.company;
+  let html = '<div class="card">' +
+    '<h2 class="section-title">Company Details</h2>' +
+    '<p class="muted" style="margin-top:-8px;margin-bottom:16px;">Used as the letterhead on every generated document.</p>' +
+    '<div class="form-grid">' +
+      field('Company Name','st-name', c.name) +
+      field('VAT Registration No.','st-vatno', c.vatNo) +
+      field('Phone','st-phone', c.phone) +
+      field('Email','st-email', c.email) +
+      '<div class="field span2"><label>Address</label><textarea id="st-address">'+escapeHtml(c.address)+'</textarea></div>' +
+    '</div>' +
+    '<div style="margin-top:16px;"><button class="btn btn-primary" onclick="saveCompanySettings()">Save Company Details</button></div>' +
+  '</div>';
+
+  html += '<div class="card">' +
+    '<h2 class="section-title">System Preferences</h2>' +
+    '<div class="form-grid">' +
+      field('Default VAT Rate (%)','st-vatrate', state.settings.vatRate, false, 'number') +
+      field('Low Stock Alert Threshold (units)','st-lowstock', state.settings.lowStockThreshold, false, 'number') +
+    '</div>' +
+    '<div style="margin-top:16px;"><button class="btn btn-primary" onclick="savePreferences()">Save Preferences</button></div>' +
+  '</div>';
+
+  html += '<div class="card" style="border-color:var(--danger);">' +
+    '<h2 class="section-title" style="color:var(--danger);">Danger Zone</h2>' +
+    '<p class="muted">This permanently erases all cargo, inventory, customers and documents for everyone using this DealerDesk link.</p>' +
+    '<button class="btn btn-danger-outline" onclick="resetAllData()">'+icon('trash')+'Erase All Data</button>' +
+  '</div>';
+
+  return html;
+}
+
+async function saveCompanySettings(){
+  state.settings.company = {
+    name: byId('st-name').value.trim(),
+    vatNo: byId('st-vatno').value.trim(),
+    phone: byId('st-phone').value.trim(),
+    email: byId('st-email').value.trim(),
+    address: byId('st-address').value.trim(),
+  };
+  await saveData();
+  showToast('Company details saved.', 'success');
+}
+
+async function savePreferences(){
+  state.settings.vatRate = parseFloat(byId('st-vatrate').value) || 0;
+  state.settings.lowStockThreshold = parseFloat(byId('st-lowstock').value) || 0;
+  await saveData();
+  showToast('Preferences saved.', 'success');
+  renderMain();
+}
+
+async function resetAllData(){
+  if(!requireAdmin('erase all data')) return;
+  if(!confirm('This will permanently delete ALL cargo, inventory, customers and documents for everyone. Type OK to confirm — this cannot be undone. Continue?')) return;
+  if(!confirm('Final confirmation: erase everything now?')) return;
+  const keepSettings = state.settings;
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  state.settings = keepSettings;
+  await saveData();
+  showToast('All data erased.');
+  navigate('dashboard');
+}
+
+/* ===================== INIT ===================== */
+async function initApp(){
+  renderShell();
+  setSaveIndicator('saving');
+  await loadData();
+  byId('role-select').value = state.role;
+  setSaveIndicator('saved');
+  navigate('dashboard');
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+
+</script>
+</body>
+</html>
